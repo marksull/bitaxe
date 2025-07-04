@@ -74,5 +74,8 @@ export default function Command() {
       .map(({ label, key }) => `| ${label} | ${info[key] !== undefined ? String(info[key]) : "-"} |`)
       .join("\n");
 
-  return <Detail markdown={`# Bitaxe System Info\n\n${table}\n\n# WiFi Settings\n\n${wifiTable}`} />;
+  const hostname = typeof info["hostname"] === "string" ? info["hostname"] : undefined;
+  const header = `# Bitaxe System Info${hostname ? `: ${hostname}` : ""}`;
+
+  return <Detail markdown={`${header}\n\n${table}\n\n# WiFi Settings\n\n${wifiTable}`} />;
 }
