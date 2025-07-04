@@ -37,12 +37,28 @@ export default function Command() {
   if (error) return <Detail markdown={`Error: ${error}`} />;
   if (!info) return <Detail markdown="No data received." />;
 
-  return (
-    <Detail
-      markdown={`# Bitaxe System Info\n\n\n
-${Object.entries(info)
-  .map(([k, v]) => `**${k}**: ${JSON.stringify(v)}`)
-  .join("\n")}`}
-    />
-  );
+  // Only display specific fields in a formatted table
+  const fields = [
+    { label: "Voltage", key: "voltage" },
+    { label: "Current", key: "current" },
+    { label: "Temp", key: "temp" },
+    { label: "VR Temp", key: "vrTemp" },
+    { label: "Hash Rate", key: "hashRate" },
+    { label: "Frequency", key: "frequency" },
+    { label: "Fan RPM", key: "fanrpm" },
+  ];
+
+  const table =
+    `| Field | Value |\n|-------|-------|\n` +
+    fields
+      .map(({ label, key }) => {
+        let value = info[key];
+        if ((key === "voltage" || key === "current") && typeof value === "number") {
+          value = value / 1000;
+        }
+        return `| ${label} | ${value !== undefined ? String(value) : "-"} |`;
+      })
+      .join("\n");
+
+  return <Detail markdown={`# Bitaxe System Info\n\n${table}`} />;
 }
