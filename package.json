@@ -16,12 +16,12 @@
   ],
   "preferences": [
     {
-      "name": "bitaxeIp",
-      "title": "Bitaxe IP Address",
-        "description": "The IP address of the BitAxe device",
+      "name": "bitaxeIps",
+      "title": "Bitaxe IP Addresses",
       "type": "textfield",
-      "placeholder": "e.g. 192.168.1.100",
-      "required": true
+      "placeholder": "e.g. 192.168.1.100,192.168.1.101",
+      "required": true,
+      "description": "Comma-separated list of BitAxe IP addresses"
     }
   ],
   "dependencies": {

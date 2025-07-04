@@ -1,4 +1,4 @@
-import { Detail, getPreferenceValues } from "@raycast/api";
+import { Detail, getPreferenceValues, Form, ActionPanel, Action, useNavigation } from "@raycast/api";
 import { useEffect, useState } from "react";
 
 interface SystemInfo {
@@ -6,17 +6,21 @@ interface SystemInfo {
 }
 
 export default function Command() {
-  const { bitaxeIp } = getPreferenceValues<{ bitaxeIp: string }>();
+  const { bitaxeIps } = getPreferenceValues<{ bitaxeIps: string }>();
+  const ipList = bitaxeIps.split(",").map((ip) => ip.trim()).filter(Boolean);
+  const [selectedIp, setSelectedIp] = useState<string>(ipList[0] || "");
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!selectedIp) return;
+    setLoading(true);
+    setError(null);
+    setInfo(null);
     async function fetchInfo() {
-      setLoading(true);
-      setError(null);
       try {
-        const res = await fetch(`http://${bitaxeIp}/api/system/info`);
+        const res = await fetch(`http://${selectedIp}/api/system/info`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as SystemInfo;
         setInfo(data);
@@ -31,7 +35,31 @@ export default function Command() {
       }
     }
     fetchInfo();
-  }, [bitaxeIp]);
+  }, [selectedIp]);
+
+  if (ipList.length > 1) {
+    return (
+      <Form
+        navigationTitle="Select Bitaxe IP"
+        actions={
+          <ActionPanel>
+            <Action.SubmitForm title="Show Status" onSubmit={() => {}} />
+          </ActionPanel>
+        }
+      >
+        <Form.Dropdown
+          id="ip"
+          title="Bitaxe IP Address"
+          value={selectedIp}
+          onChange={setSelectedIp}
+        >
+          {ipList.map((ip) => (
+            <Form.Dropdown.Item key={ip} value={ip} title={ip} />
+          ))}
+        </Form.Dropdown>
+      </Form>
+    );
+  }
 
   if (loading) return <Detail markdown="Loading..." />;
   if (error) return <Detail markdown={`Error: ${error}`} />;
