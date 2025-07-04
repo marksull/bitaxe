@@ -60,5 +60,19 @@ export default function Command() {
       })
       .join("\n");
 
-  return <Detail markdown={`# Bitaxe System Info\n\n${table}`} />;
+  // WiFi settings table
+  const wifiFields = [
+    { label: "SSID", key: "ssid" },
+    { label: "WiFi Status", key: "wifiStatus" },
+    { label: "WiFi RSSI", key: "wifiRSSI" },
+    { label: "MAC Address", key: "macAddr" },
+  ];
+
+  const wifiTable =
+    `| WiFi Field | Value |\n|------------|-------|\n` +
+    wifiFields
+      .map(({ label, key }) => `| ${label} | ${info[key] !== undefined ? String(info[key]) : "-"} |`)
+      .join("\n");
+
+  return <Detail markdown={`# Bitaxe System Info\n\n${table}\n\n# WiFi Settings\n\n${wifiTable}`} />;
 }
