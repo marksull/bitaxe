@@ -43,7 +43,11 @@ export default function Command() {
   }
 
   if (error) {
-    return <Detail isLoading={false} markdown={`Error: ${error}`} />;
+    let errorMessage = error;
+    if (error.toLowerCase().includes("fetch failed") || error.toLowerCase().includes("networkerror")) {
+      errorMessage = `Unable to connect to Bitaxe at ${selectedIp}. Please check that the device is online and accessible on your network.`;
+    }
+    return <Detail isLoading={false} markdown={`Error: ${errorMessage}`} />;
   }
 
   if (loading || !info) {
@@ -54,9 +58,26 @@ export default function Command() {
     <Detail
       isLoading={false}
       navigationTitle={(info["hostname"]?.toString() || selectedIp) as string}
-      markdown={
-        `# Bitaxe Status\n\n**IP:** ${selectedIp}\n**Hostname:** ${info["hostname"]?.toString() || "-"}\n**Hashrate:** ${info["hashRate"] ? info["hashRate"] + " H/s" : "-"}\n\n---\n\n## System Information\n\n- **Voltage:** ${info["voltage"] ? (Number(info["voltage"]) / 1000).toFixed(2) : "-"}\n- **Current:** ${info["current"] ? (Number(info["current"]) / 1000).toFixed(2) : "-"}\n- **Temperature:** ${info["temp"]?.toString() || "-"}\n- **VR Temperature:** ${info["vrTemp"]?.toString() || "-"}\n- **Frequency:** ${info["frequency"]?.toString() || "-"}\n- **Fan RPM:** ${info["fanrpm"]?.toString() || "-"}\n\n---\n\n## WiFi Settings\n\n- **SSID:** ${info["ssid"]?.toString() || "-"}\n- **Status:** ${info["wifiStatus"]?.toString() || "-"}\n- **RSSI:** ${info["wifiRSSI"]?.toString() || "-"}\n- **MAC Address:** ${info["macAddr"]?.toString() || "-"}\n`
-      }
+      markdown={`# Bitaxe Status\n\n## General\n\n| Field     | Value |
+| --------- | ----- |
+| IP        | ${selectedIp} |
+| Hostname  | ${info["hostname"]?.toString() || "-"} |
+| Hashrate  | ${info["hashRate"] ? info["hashRate"] + " H/s" : "-"} |
+\n\n## System Information\n\n| Field         | Value |
+| ------------- | ----- |
+| Voltage       | ${info["voltage"] ? (Number(info["voltage"]) / 1000).toFixed(2) : "-"} |
+| Current       | ${info["current"] ? (Number(info["current"]) / 1000).toFixed(2) : "-"} |
+| Temperature   | ${info["temp"]?.toString() || "-"} |
+| VR Temperature| ${info["vrTemp"]?.toString() || "-"} |
+| Frequency     | ${info["frequency"]?.toString() || "-"} |
+| Fan RPM       | ${info["fanrpm"]?.toString() || "-"} |
+\n\n## WiFi Settings\n\n| Field       | Value |
+| ----------- | ----- |
+| SSID        | ${info["ssid"]?.toString() || "-"} |
+| Status      | ${info["wifiStatus"]?.toString() || "-"} |
+| RSSI        | ${info["wifiRSSI"]?.toString() || "-"} |
+| MAC Address | ${info["macAddr"]?.toString() || "-"} |
+`}
       actions={
         ipList.length > 1 ? (
           <ActionPanel>
