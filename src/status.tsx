@@ -1,4 +1,4 @@
-import { Detail, getPreferenceValues, ActionPanel } from "@raycast/api";
+import { Detail, getPreferenceValues } from "@raycast/api";
 import { useEffect, useState } from "react";
 
 interface SystemInfo {
@@ -55,6 +55,7 @@ export default function Command() {
     { label: "Hostname", key: "hostname" },
     { label: "Hashrate", key: "hashRate" },
   ];
+
   const systemFields = [
     { label: "Voltage", key: "voltage" },
     { label: "Current", key: "current" },
@@ -63,6 +64,7 @@ export default function Command() {
     { label: "Frequency", key: "frequency" },
     { label: "Fan RPM", key: "fanrpm" },
   ];
+
   const wifiFields = [
     { label: "SSID", key: "ssid" },
     { label: "Status", key: "wifiStatus" },
@@ -115,11 +117,6 @@ export default function Command() {
       isLoading={ipList.some((ip) => loadingMap[ip])}
       navigationTitle={"BitAxe Status"}
       markdown={markdown}
-      actions={
-        ipList.length > 1 ? (
-          <ActionPanel></ActionPanel>
-        ) : undefined
-      }
     />
   );
 }
