@@ -70,6 +70,11 @@ export default function Command() {
     { label: "MAC Address", key: "macAddr" },
   ];
 
+  /**
+   * Returns the formatted value for a given field key and info object.
+   * For 'current' and 'hashRate', divides by 1000 and rounds to two decimals.
+   * Returns '-' if value is missing.
+   */
   function getField(ip: string, key: string) {
     if (loadingMap[ip]) return "Loading";
     if (errorMap[ip]) return "Error";
@@ -82,12 +87,20 @@ export default function Command() {
     return info[key]?.toString() || "-";
   }
 
+  /**
+   * Returns the header label for a given IP address.
+   * Uses the hostname if available, otherwise falls back to the IP address.
+   */
   function getHeaderLabel(ip: string) {
     const info = infoMap[ip];
     if (info && typeof info["hostname"] === "string" && info["hostname"]) return info["hostname"] as string;
     return ip; // Always fallback to IP if not loaded or error
   }
 
+  /**
+   * Renders a Markdown table for the given title and fields.
+   * Each column corresponds to an IP/hostname, each row to a field.
+   */
   function renderTable(title: string, fields: { label: string; key: string }[]) {
     let header = `| Field |${ipList.map((ip) => ` ${getHeaderLabel(ip)} |`).join("")}`;
     let sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
