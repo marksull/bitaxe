@@ -9,86 +9,102 @@ export default function Command() {
   const { bitaxeIps } = getPreferenceValues<{ bitaxeIps: string }>();
   const ipList = bitaxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
 
-  const [selectedIp, setSelectedIp] = useState<string>(() => (ipList.length > 0 ? ipList[0] : ""));
-  const [info, setInfo] = useState<SystemInfo | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  // New state: info and loading for each IP
+  const [infoMap, setInfoMap] = useState<Record<string, SystemInfo | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
+  const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>(() => Object.fromEntries(ipList.map(ip => [ip, true])));
+  const [errorMap, setErrorMap] = useState<Record<string, string | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
 
   useEffect(() => {
-    if (!selectedIp) return;
-    setLoading(true);
-    setError(null);
-    setInfo(null);
-    async function fetchInfo() {
+    // Reset state when ipList changes
+    setInfoMap(Object.fromEntries(ipList.map(ip => [ip, null])));
+    setLoadingMap(Object.fromEntries(ipList.map(ip => [ip, true])));
+    setErrorMap(Object.fromEntries(ipList.map(ip => [ip, null])));
+    ipList.forEach((ip) => {
+      fetchInfo(ip);
+    });
+    async function fetchInfo(ip: string) {
+      setLoadingMap((prev) => ({ ...prev, [ip]: true }));
+      setErrorMap((prev) => ({ ...prev, [ip]: null }));
       try {
-        const res = await fetch(`http://${selectedIp}/api/system/info`);
+        const res = await fetch(`http://${ip}/api/system/info`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as SystemInfo;
-        setInfo(data);
+        setInfoMap((prev) => ({ ...prev, [ip]: data }));
       } catch (e) {
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError("Unknown error");
-        }
+        setInfoMap((prev) => ({ ...prev, [ip]: null }));
+        setErrorMap((prev) => ({ ...prev, [ip]: e instanceof Error ? e.message : "Unknown error" }));
       } finally {
-        setLoading(false);
+        setLoadingMap((prev) => ({ ...prev, [ip]: false }));
       }
     }
-    fetchInfo();
-  }, [selectedIp]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bitaxeIps]);
 
   if (ipList.length === 0) {
     return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one Bitaxe IP address in the extension preferences."} />;
   }
 
-  if (error) {
-    let errorMessage = error;
-    if (error.toLowerCase().includes("fetch failed") || error.toLowerCase().includes("networkerror")) {
-      errorMessage = `Unable to connect to Bitaxe at ${selectedIp}. Please check that the device is online and accessible on your network.`;
+  // If all IPs have errors, show the first error
+  if (ipList.every((ip) => errorMap[ip])) {
+    const firstIp = ipList[0];
+    let errorMessage = errorMap[firstIp] || "Unknown error";
+    if (errorMessage.toLowerCase().includes("fetch failed") || errorMessage.toLowerCase().includes("networkerror")) {
+      errorMessage = `Unable to connect to Bitaxe at ${firstIp}. Please check that the device is online and accessible on your network.`;
     }
     return <Detail isLoading={false} markdown={`Error: ${errorMessage}`} />;
   }
 
-  if (loading || !info) {
-    return <Detail isLoading={true} markdown={"Loading..."} />;
+  // Table fields
+  const generalFields = [
+    { label: "IP", key: "ip" },
+    { label: "Hostname", key: "hostname" },
+    { label: "Hashrate", key: "hashRate" },
+  ];
+  const systemFields = [
+    { label: "Voltage", key: "voltage" },
+    { label: "Current", key: "current" },
+    { label: "Temperature", key: "temp" },
+    { label: "VR Temperature", key: "vrTemp" },
+    { label: "Frequency", key: "frequency" },
+    { label: "Fan RPM", key: "fanrpm" },
+  ];
+  const wifiFields = [
+    { label: "SSID", key: "ssid" },
+    { label: "Status", key: "wifiStatus" },
+    { label: "RSSI", key: "wifiRSSI" },
+    { label: "MAC Address", key: "macAddr" },
+  ];
+
+  // Helper to get value or loading/error
+  function getField(ip: string, key: string) {
+    if (loadingMap[ip]) return "Loading";
+    if (errorMap[ip]) return "Error";
+    if (key === "ip") return ip;
+    const info = infoMap[ip];
+    if (!info) return "-";
+    if (key === "voltage" && info["voltage"]) return (Number(info["voltage"]) / 1000).toFixed(2);
+    if (key === "current" && info["current"]) return (Number(info["current"]) / 1000).toFixed(2);
+    return info[key]?.toString() || "-";
   }
+
+  function renderTable(title: string, fields: { label: string; key: string }[]) {
+    let header = `| Field |${ipList.map((ip) => ` ${ip} |`).join("")}`;
+    let sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
+    let rows = fields.map((f) => `| ${f.label} |${ipList.map((ip) => ` ${getField(ip, f.key)} |`).join("")}`).join("\n");
+    return `## ${title}\n\n${header}\n${sep}\n${rows}`;
+  }
+
+  const markdown = `# Bitaxe Status\n\n${renderTable("General", generalFields)}\n\n${renderTable("System Information", systemFields)}\n\n${renderTable("WiFi Settings", wifiFields)}`;
 
   return (
     <Detail
-      isLoading={false}
-      navigationTitle={(info["hostname"]?.toString() || selectedIp) as string}
-      markdown={`# Bitaxe Status\n\n## General\n\n| Field     | Value |
-| --------- | ----- |
-| IP        | ${selectedIp} |
-| Hostname  | ${info["hostname"]?.toString() || "-"} |
-| Hashrate  | ${info["hashRate"] ? info["hashRate"] + " H/s" : "-"} |
-\n\n## System Information\n\n| Field         | Value |
-| ------------- | ----- |
-| Voltage       | ${info["voltage"] ? (Number(info["voltage"]) / 1000).toFixed(2) : "-"} |
-| Current       | ${info["current"] ? (Number(info["current"]) / 1000).toFixed(2) : "-"} |
-| Temperature   | ${info["temp"]?.toString() || "-"} |
-| VR Temperature| ${info["vrTemp"]?.toString() || "-"} |
-| Frequency     | ${info["frequency"]?.toString() || "-"} |
-| Fan RPM       | ${info["fanrpm"]?.toString() || "-"} |
-\n\n## WiFi Settings\n\n| Field       | Value |
-| ----------- | ----- |
-| SSID        | ${info["ssid"]?.toString() || "-"} |
-| Status      | ${info["wifiStatus"]?.toString() || "-"} |
-| RSSI        | ${info["wifiRSSI"]?.toString() || "-"} |
-| MAC Address | ${info["macAddr"]?.toString() || "-"} |
-`}
+      isLoading={ipList.some((ip) => loadingMap[ip])}
+      navigationTitle={"Bitaxe Status"}
+      markdown={markdown}
       actions={
         ipList.length > 1 ? (
           <ActionPanel>
-            {ipList.map((ip) => (
-              <Action
-                key={ip}
-                title={`Switch to ${ip}`}
-                onAction={() => setSelectedIp(ip)}
-                icon="🌐"
-              />
-            ))}
+            {/* Optionally, add actions for each IP here */}
           </ActionPanel>
         ) : undefined
       }
