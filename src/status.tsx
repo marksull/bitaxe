@@ -88,11 +88,9 @@ export default function Command() {
 
   // Helper to get header label for each column (hostname or fallback to IP)
   function getHeaderLabel(ip: string) {
-    if (loadingMap[ip]) return "Loading";
-    if (errorMap[ip]) return "Error";
     const info = infoMap[ip];
     if (info && typeof info["hostname"] === "string" && info["hostname"]) return info["hostname"] as string;
-    return ip;
+    return ip; // Always fallback to IP if not loaded or error
   }
 
   function renderTable(title: string, fields: { label: string; key: string }[]) {
