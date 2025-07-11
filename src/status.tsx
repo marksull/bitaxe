@@ -9,18 +9,16 @@ export default function Command() {
   const { bitaxeIps } = getPreferenceValues<{ bitaxeIps: string }>();
   const ipList = bitaxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
 
-  // New state: info and loading for each IP
   const [infoMap, setInfoMap] = useState<Record<string, SystemInfo | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>(() => Object.fromEntries(ipList.map(ip => [ip, true])));
   const [errorMap, setErrorMap] = useState<Record<string, string | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
 
   useEffect(() => {
-    // Reset state when ipList changes
     setInfoMap(Object.fromEntries(ipList.map(ip => [ip, null])));
     setLoadingMap(Object.fromEntries(ipList.map(ip => [ip, true])));
     setErrorMap(Object.fromEntries(ipList.map(ip => [ip, null])));
     ipList.forEach((ip) => {
-      fetchInfo(ip);
+      fetchInfo(ip).then();
     });
     async function fetchInfo(ip: string) {
       setLoadingMap((prev) => ({ ...prev, [ip]: true }));
@@ -43,7 +41,6 @@ export default function Command() {
     return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one Bitaxe IP address in the extension preferences."} />;
   }
 
-  // If all IPs have errors, show the first error
   if (ipList.every((ip) => errorMap[ip])) {
     const firstIp = ipList[0];
     let errorMessage = errorMap[firstIp] || "Unknown error";
@@ -53,7 +50,6 @@ export default function Command() {
     return <Detail isLoading={false} markdown={`Error: ${errorMessage}`} />;
   }
 
-  // Table fields
   const generalFields = [
     { label: "IP", key: "ip" },
     { label: "Hostname", key: "hostname" },
@@ -74,7 +70,6 @@ export default function Command() {
     { label: "MAC Address", key: "macAddr" },
   ];
 
-  // Helper to get value or loading/error
   function getField(ip: string, key: string) {
     if (loadingMap[ip]) return "Loading";
     if (errorMap[ip]) return "Error";
@@ -87,7 +82,6 @@ export default function Command() {
     return info[key]?.toString() || "-";
   }
 
-  // Helper to get header label for each column (hostname or fallback to IP)
   function getHeaderLabel(ip: string) {
     const info = infoMap[ip];
     if (info && typeof info["hostname"] === "string" && info["hostname"]) return info["hostname"] as string;
