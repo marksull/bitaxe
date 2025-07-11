@@ -6,8 +6,8 @@ interface SystemInfo {
 }
 
 export default function Command() {
-  const { bitAxeIps } = getPreferenceValues<{ bitAxeIps: string }>();
-  const ipList = bitAxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
+  const { bitaxeIps } = getPreferenceValues<{ bitaxeIps: string }>();
+  const ipList = bitaxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
 
   // New state: info and loading for each IP
   const [infoMap, setInfoMap] = useState<Record<string, SystemInfo | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
@@ -37,10 +37,10 @@ export default function Command() {
         setLoadingMap((prev) => ({ ...prev, [ip]: false }));
       }
     }
-  }, [bitAxeIps]);
+  }, [bitaxeIps]);
 
   if (ipList.length === 0) {
-    return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one BitAxe IP address in the extension preferences."} />;
+    return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one Bitaxe IP address in the extension preferences."} />;
   }
 
   // If all IPs have errors, show the first error
@@ -74,6 +74,7 @@ export default function Command() {
     { label: "MAC Address", key: "macAddr" },
   ];
 
+  // Helper to get value or loading/error
   function getField(ip: string, key: string) {
     if (loadingMap[ip]) return "Loading";
     if (errorMap[ip]) return "Error";
@@ -85,10 +86,19 @@ export default function Command() {
     return info[key]?.toString() || "-";
   }
 
+  // Helper to get header label for each column (hostname or fallback to IP)
+  function getHeaderLabel(ip: string) {
+    if (loadingMap[ip]) return "Loading";
+    if (errorMap[ip]) return "Error";
+    const info = infoMap[ip];
+    if (info && typeof info["hostname"] === "string" && info["hostname"]) return info["hostname"] as string;
+    return ip;
+  }
+
   function renderTable(title: string, fields: { label: string; key: string }[]) {
-    const header = `| Field |${ipList.map((ip) => ` ${ip} |`).join("")}`;
-    const sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
-    const rows = fields.map((f) => `| ${f.label} |${ipList.map((ip) => ` ${getField(ip, f.key)} |`).join("")}`).join("\n");
+    let header = `| Field |${ipList.map((ip) => ` ${getHeaderLabel(ip)} |`).join("")}`;
+    let sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
+    let rows = fields.map((f) => `| ${f.label} |${ipList.map((ip) => ` ${getField(ip, f.key)} |`).join("")}`).join("\n");
     return `## ${title}\n\n${header}\n${sep}\n${rows}`;
   }
 
