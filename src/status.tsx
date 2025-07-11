@@ -1,4 +1,4 @@
-import { Detail, getPreferenceValues, ActionPanel, Action } from "@raycast/api";
+import { Detail, getPreferenceValues, ActionPanel } from "@raycast/api";
 import { useEffect, useState } from "react";
 
 interface SystemInfo {
@@ -6,8 +6,8 @@ interface SystemInfo {
 }
 
 export default function Command() {
-  const { bitaxeIps } = getPreferenceValues<{ bitaxeIps: string }>();
-  const ipList = bitaxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
+  const { bitAxeIps } = getPreferenceValues<{ bitAxeIps: string }>();
+  const ipList = bitAxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
 
   // New state: info and loading for each IP
   const [infoMap, setInfoMap] = useState<Record<string, SystemInfo | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
@@ -37,11 +37,10 @@ export default function Command() {
         setLoadingMap((prev) => ({ ...prev, [ip]: false }));
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bitaxeIps]);
+  }, [bitAxeIps]);
 
   if (ipList.length === 0) {
-    return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one Bitaxe IP address in the extension preferences."} />;
+    return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one BitAxe IP address in the extension preferences."} />;
   }
 
   // If all IPs have errors, show the first error
@@ -49,7 +48,7 @@ export default function Command() {
     const firstIp = ipList[0];
     let errorMessage = errorMap[firstIp] || "Unknown error";
     if (errorMessage.toLowerCase().includes("fetch failed") || errorMessage.toLowerCase().includes("networkerror")) {
-      errorMessage = `Unable to connect to Bitaxe at ${firstIp}. Please check that the device is online and accessible on your network.`;
+      errorMessage = `Unable to connect to BitAxe at ${firstIp}. Please check that the device is online and accessible on your network.`;
     }
     return <Detail isLoading={false} markdown={`Error: ${errorMessage}`} />;
   }
@@ -75,7 +74,6 @@ export default function Command() {
     { label: "MAC Address", key: "macAddr" },
   ];
 
-  // Helper to get value or loading/error
   function getField(ip: string, key: string) {
     if (loadingMap[ip]) return "Loading";
     if (errorMap[ip]) return "Error";
@@ -88,24 +86,22 @@ export default function Command() {
   }
 
   function renderTable(title: string, fields: { label: string; key: string }[]) {
-    let header = `| Field |${ipList.map((ip) => ` ${ip} |`).join("")}`;
-    let sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
-    let rows = fields.map((f) => `| ${f.label} |${ipList.map((ip) => ` ${getField(ip, f.key)} |`).join("")}`).join("\n");
+    const header = `| Field |${ipList.map((ip) => ` ${ip} |`).join("")}`;
+    const sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
+    const rows = fields.map((f) => `| ${f.label} |${ipList.map((ip) => ` ${getField(ip, f.key)} |`).join("")}`).join("\n");
     return `## ${title}\n\n${header}\n${sep}\n${rows}`;
   }
 
-  const markdown = `# Bitaxe Status\n\n${renderTable("General", generalFields)}\n\n${renderTable("System Information", systemFields)}\n\n${renderTable("WiFi Settings", wifiFields)}`;
+  const markdown = `# BitAxe Status\n\n${renderTable("General", generalFields)}\n\n${renderTable("System Information", systemFields)}\n\n${renderTable("WiFi Settings", wifiFields)}`;
 
   return (
     <Detail
       isLoading={ipList.some((ip) => loadingMap[ip])}
-      navigationTitle={"Bitaxe Status"}
+      navigationTitle={"BitAxe Status"}
       markdown={markdown}
       actions={
         ipList.length > 1 ? (
-          <ActionPanel>
-            {/* Optionally, add actions for each IP here */}
-          </ActionPanel>
+          <ActionPanel></ActionPanel>
         ) : undefined
       }
     />
