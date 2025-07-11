@@ -83,6 +83,7 @@ export default function Command() {
     if (!info) return "-";
     if (key === "voltage" && info["voltage"]) return (Number(info["voltage"]) / 1000).toFixed(2);
     if (key === "current" && info["current"]) return (Number(info["current"]) / 1000).toFixed(2);
+    if (key === "hashRate" && info["hashRate"]) return (Number(info["hashRate"]) / 1000).toFixed(2);
     return info[key]?.toString() || "-";
   }
 
