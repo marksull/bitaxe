@@ -6,8 +6,8 @@ interface SystemInfo {
 }
 
 export default function Command() {
-  const { bitaxeIps } = getPreferenceValues<{ bitaxeIps: string }>();
-  const ipList = bitaxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
+  const { bitAxeIps } = getPreferenceValues<{ bitAxeIps: string }>();
+  const ipList = bitAxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
 
   const [infoMap, setInfoMap] = useState<Record<string, SystemInfo | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>(() => Object.fromEntries(ipList.map(ip => [ip, true])));
@@ -35,10 +35,10 @@ export default function Command() {
         setLoadingMap((prev) => ({ ...prev, [ip]: false }));
       }
     }
-  }, [bitaxeIps]);
+  }, [bitAxeIps]);
 
   if (ipList.length === 0) {
-    return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one Bitaxe IP address in the extension preferences."} />;
+    return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one BitAxe IP address in the extension preferences."} />;
   }
 
   if (ipList.every((ip) => errorMap[ip])) {
@@ -50,8 +50,8 @@ export default function Command() {
     return <Detail isLoading={false} markdown={`Error: ${errorMessage}`} />;
   }
 
-  // Combine all fields into a single array for one table
   const allFields = [
+    { label: "Device Link", key: "deviceLink" },
     { label: "Hostname", key: "hostname" },
     { label: "Hashrate", key: "hashRate" },
     { label: "Voltage", key: "voltage" },
@@ -70,10 +70,12 @@ export default function Command() {
    * Returns the formatted value for a given field key and info object.
    * For 'current' and 'hashRate', divides by 1000 and rounds to two decimals.
    * Returns '-' if value is missing.
+   * For 'deviceLink', returns a markdown link to the device.
    */
   function getField(ip: string, key: string) {
     if (loadingMap[ip]) return "Loading";
     if (errorMap[ip]) return "Error";
+    if (key === "deviceLink") return `[Open](${`http://${ip}/#/`})`;
     const info = infoMap[ip];
     if (!info) return "-";
     if (key === "voltage" && info["voltage"]) return (Number(info["voltage"]) / 1000).toFixed(2);
@@ -83,25 +85,16 @@ export default function Command() {
   }
 
   /**
-   * Returns the header label for a given IP address.
-   * Always returns the IP address (no hostname fallback).
-   */
-  function getHeaderLabel(ip: string) {
-    return ip;
-  }
-
-  /**
    * Renders a Markdown table for the given title and fields.
    * Each column corresponds to an IP/hostname, each row to a field.
    */
   function renderTable(title: string, fields: { label: string; key: string }[]) {
-    let header = `| Field |${ipList.map((ip) => ` ${getHeaderLabel(ip)} |`).join("")}`;
+    let header = `| Field |${ipList.map((ip) => ` ${ip} |`).join("")}`;
     let sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
     let rows = fields.map((f) => `| ${f.label} |${ipList.map((ip) => ` ${getField(ip, f.key)} |`).join("")}`).join("\n");
     return `## ${title}\n\n${header}\n${sep}\n${rows}`;
   }
 
-  // Replace markdown generation with a single table
   const markdown = `# BitAxe Status\n\n${renderTable("Status", allFields)}`;
 
   return (
