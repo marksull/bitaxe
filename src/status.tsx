@@ -52,7 +52,6 @@ export default function Command() {
 
   // Combine all fields into a single array for one table
   const allFields = [
-    { label: "IP", key: "ip" },
     { label: "Hostname", key: "hostname" },
     { label: "Hashrate", key: "hashRate" },
     { label: "Voltage", key: "voltage" },
@@ -75,7 +74,6 @@ export default function Command() {
   function getField(ip: string, key: string) {
     if (loadingMap[ip]) return "Loading";
     if (errorMap[ip]) return "Error";
-    if (key === "ip") return ip;
     const info = infoMap[ip];
     if (!info) return "-";
     if (key === "voltage" && info["voltage"]) return (Number(info["voltage"]) / 1000).toFixed(2);
@@ -86,12 +84,10 @@ export default function Command() {
 
   /**
    * Returns the header label for a given IP address.
-   * Uses the hostname if available, otherwise falls back to the IP address.
+   * Always returns the IP address (no hostname fallback).
    */
   function getHeaderLabel(ip: string) {
-    const info = infoMap[ip];
-    if (info && typeof info["hostname"] === "string" && info["hostname"]) return info["hostname"] as string;
-    return ip; // Always fallback to IP if not loaded or error
+    return ip;
   }
 
   /**
