@@ -50,22 +50,17 @@ export default function Command() {
     return <Detail isLoading={false} markdown={`Error: ${errorMessage}`} />;
   }
 
-  const generalFields = [
+  // Combine all fields into a single array for one table
+  const allFields = [
     { label: "IP", key: "ip" },
     { label: "Hostname", key: "hostname" },
     { label: "Hashrate", key: "hashRate" },
-  ];
-
-  const systemFields = [
     { label: "Voltage", key: "voltage" },
     { label: "Current", key: "current" },
     { label: "Temperature", key: "temp" },
     { label: "VR Temperature", key: "vrTemp" },
     { label: "Frequency", key: "frequency" },
     { label: "Fan RPM", key: "fanrpm" },
-  ];
-
-  const wifiFields = [
     { label: "SSID", key: "ssid" },
     { label: "Status", key: "wifiStatus" },
     { label: "RSSI", key: "wifiRSSI" },
@@ -110,7 +105,8 @@ export default function Command() {
     return `## ${title}\n\n${header}\n${sep}\n${rows}`;
   }
 
-  const markdown = `# BitAxe Status\n\n${renderTable("General", generalFields)}\n\n${renderTable("System Information", systemFields)}\n\n${renderTable("WiFi Settings", wifiFields)}`;
+  // Replace markdown generation with a single table
+  const markdown = `# BitAxe Status\n\n${renderTable("Status", allFields)}`;
 
   return (
     <Detail
