@@ -108,12 +108,12 @@ export default function Command() {
     return `## ${title}\n\n${header}\n${sep}\n${rows}`;
   }
 
-  const markdown = `# BitAxe Status\n\n${renderTable("Status", allFields)}`;
+  const markdown = `# Bitaxe Status\n\n${renderTable("Status", allFields)}`;
 
   return (
     <Detail
       isLoading={ipList.some((ip) => loadingMap[ip])}
-      navigationTitle={"BitAxe Status"}
+      navigationTitle={"Bitaxe Status"}
       markdown={markdown}
     />
   );

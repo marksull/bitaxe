@@ -1,16 +1,16 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "bitaxe",
-  "title": "BitAxe",
-  "description": "BitAxe Status",
+  "name": "bitaxe-status",
+  "title": "Bitaxe Status",
+  "description": "Display the status of of one or more Bitaxes",
   "icon": "extension-icon.png",
   "author": "mark_sullivan",
   "license": "MIT",
   "commands": [
     {
       "name": "status",
-      "title": "status",
-      "description": "Shows the status of the BixAxe",
+      "title": "Status",
+      "description": "Display the status of of one or more Bitaxes",
       "mode": "view"
     }
   ],
@@ -21,7 +21,7 @@
       "type": "textfield",
       "placeholder": "e.g. 192.168.1.100,192.168.1.101",
       "required": true,
-      "description": "Comma-separated list of BitAxe IP addresses"
+      "description": "Comma-separated list of BitAxe IP address(es)"
     }
   ],
   "dependencies": {

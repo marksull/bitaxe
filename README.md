@@ -1,4 +1,4 @@
-# BitAxe
+# BitAxe Status
 
 Display the status of one or more locally managed BitAxe miners in a quick reference table:
 

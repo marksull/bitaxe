@@ -1,3 +1,3 @@
-# BitAxe Changelog
+# Bitaxe Changelog
 
 ## [Initial Version] - {PR_MERGE_DATE}
