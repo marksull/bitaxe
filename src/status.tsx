@@ -7,16 +7,26 @@ interface SystemInfo {
 
 export default function Command() {
   const { bitaxeIps } = getPreferenceValues<{ bitaxeIps: string }>();
-  const ipList = bitaxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
+  const ipList =
+    bitaxeIps
+      ?.split(",")
+      .map((ip) => ip.trim())
+      .filter(Boolean) || [];
 
-  const [infoMap, setInfoMap] = useState<Record<string, SystemInfo | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
-  const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>(() => Object.fromEntries(ipList.map(ip => [ip, true])));
-  const [errorMap, setErrorMap] = useState<Record<string, string | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
+  const [infoMap, setInfoMap] = useState<Record<string, SystemInfo | null>>(() =>
+    Object.fromEntries(ipList.map((ip) => [ip, null])),
+  );
+  const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(ipList.map((ip) => [ip, true])),
+  );
+  const [errorMap, setErrorMap] = useState<Record<string, string | null>>(() =>
+    Object.fromEntries(ipList.map((ip) => [ip, null])),
+  );
 
   useEffect(() => {
-    setInfoMap(Object.fromEntries(ipList.map(ip => [ip, null])));
-    setLoadingMap(Object.fromEntries(ipList.map(ip => [ip, true])));
-    setErrorMap(Object.fromEntries(ipList.map(ip => [ip, null])));
+    setInfoMap(Object.fromEntries(ipList.map((ip) => [ip, null])));
+    setLoadingMap(Object.fromEntries(ipList.map((ip) => [ip, true])));
+    setErrorMap(Object.fromEntries(ipList.map((ip) => [ip, null])));
     ipList.forEach((ip) => {
       fetchInfo(ip).then();
     });
@@ -42,9 +52,12 @@ export default function Command() {
   }, [bitaxeIps]);
 
   if (ipList.length === 0) {
-    return <Detail isLoading={false}
-              markdown={"No IPs Configured. Please configure at least one BitAxe IP address in the extension preferences."}
-            />;
+    return (
+      <Detail
+        isLoading={false}
+        markdown={"No IPs Configured. Please configure at least one BitAxe IP address in the extension preferences."}
+      />
+    );
   }
 
   if (ipList.every((ip) => errorMap[ip])) {
@@ -102,19 +115,17 @@ export default function Command() {
    * Each column corresponds to an IP/hostname, each row to a field.
    */
   function renderTable(title: string, fields: { label: string; key: string }[]) {
-    let header = `| Field |${ipList.map((ip) => ` ${ip} |`).join("")}`;
-    let sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
-    let rows = fields.map((f) => `| ${f.label} |${ipList.map((ip) => ` ${getField(ip, f.key)} |`).join("")}`).join("\n");
+    const header = `| Field |${ipList.map((ip) => ` ${ip} |`).join("")}`;
+    const sep = `| ------ |${ipList.map(() => " ----- | ").join("")}`;
+    const rows = fields
+      .map((f) => `| ${f.label} |${ipList.map((ip) => ` ${getField(ip, f.key)} |`).join("")}`)
+      .join("\n");
     return `## ${title}\n\n${header}\n${sep}\n${rows}`;
   }
 
   const markdown = `# Bitaxe Status\n\n${renderTable("Status", allFields)}`;
 
   return (
-    <Detail
-      isLoading={ipList.some((ip) => loadingMap[ip])}
-      navigationTitle={"Bitaxe Status"}
-      markdown={markdown}
-    />
+    <Detail isLoading={ipList.some((ip) => loadingMap[ip])} navigationTitle={"Bitaxe Status"} markdown={markdown} />
   );
 }
