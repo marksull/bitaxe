@@ -6,8 +6,8 @@ interface SystemInfo {
 }
 
 export default function Command() {
-  const { bitAxeIps } = getPreferenceValues<{ bitAxeIps: string }>();
-  const ipList = bitAxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
+  const { bitaxeIps } = getPreferenceValues<{ bitaxeIps: string }>();
+  const ipList = bitaxeIps?.split(",").map((ip) => ip.trim()).filter(Boolean) || [];
 
   const [infoMap, setInfoMap] = useState<Record<string, SystemInfo | null>>(() => Object.fromEntries(ipList.map(ip => [ip, null])));
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>(() => Object.fromEntries(ipList.map(ip => [ip, true])));
@@ -35,7 +35,7 @@ export default function Command() {
         setLoadingMap((prev) => ({ ...prev, [ip]: false }));
       }
     }
-  }, [bitAxeIps]);
+  }, [bitaxeIps]);
 
   if (ipList.length === 0) {
     return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one BitAxe IP address in the extension preferences."} />;
@@ -70,7 +70,7 @@ export default function Command() {
    * Returns the formatted value for a given field key and info object.
    * For 'current' and 'hashRate', divides by 1000 and rounds to two decimals.
    * Returns '-' if value is missing.
-   * For 'deviceLink', returns a markdown link to the device.
+   * For 'deviceLink', returns a Markdown link to the device.
    */
   function getField(ip: string, key: string) {
     if (loadingMap[ip]) return "Loading";
