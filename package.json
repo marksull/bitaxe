@@ -9,7 +9,7 @@
   "commands": [
     {
       "name": "status",
-      "title": "Status",
+      "title": "Bitaxe Status",
       "description": "Display the status of of one or more Bitaxes",
       "mode": "view"
     }
@@ -21,7 +21,7 @@
       "type": "textfield",
       "placeholder": "e.g. 192.168.1.100,192.168.1.101",
       "required": true,
-      "description": "Comma-separated list of BitAxe IP address(es)"
+      "description": "Comma-separated list of Bitaxe IP address(es)"
     }
   ],
   "dependencies": {
