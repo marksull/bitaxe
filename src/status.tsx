@@ -25,7 +25,11 @@ export default function Command() {
       setErrorMap((prev) => ({ ...prev, [ip]: null }));
       try {
         const res = await fetch(`http://${ip}/api/system/info`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          setErrorMap((prev) => ({ ...prev, [ip]: `HTTP ${res.status}` }));
+          setInfoMap((prev) => ({ ...prev, [ip]: null }));
+          return;
+        }
         const data = (await res.json()) as SystemInfo;
         setInfoMap((prev) => ({ ...prev, [ip]: data }));
       } catch (e) {
@@ -38,7 +42,9 @@ export default function Command() {
   }, [bitaxeIps]);
 
   if (ipList.length === 0) {
-    return <Detail isLoading={false} markdown={"No IPs Configured. Please configure at least one BitAxe IP address in the extension preferences."} />;
+    return <Detail isLoading={false}
+              markdown={"No IPs Configured. Please configure at least one BitAxe IP address in the extension preferences."}
+            />;
   }
 
   if (ipList.every((ip) => errorMap[ip])) {
