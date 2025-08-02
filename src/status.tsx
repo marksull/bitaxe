@@ -73,6 +73,15 @@ export default function Command() {
   ];
 
   /**
+   * Helper to divide a value by 1000 and round to two decimals.
+   */
+  function divideAndRound(val: unknown) {
+    const num = Number(val);
+    if (isNaN(num)) return "-";
+    return (num / 1000).toFixed(2);
+  }
+
+  /**
    * Returns the formatted value for a given field key and info object.
    * For 'current' and 'hashRate', divides by 1000 and rounds to two decimals.
    * Returns '-' if value is missing.
@@ -84,9 +93,7 @@ export default function Command() {
     if (key === "deviceLink") return `[Open](${`http://${ip}/#/`})`;
     const info = infoMap[ip];
     if (!info) return "-";
-    if (key === "voltage" && info["voltage"]) return (Number(info["voltage"]) / 1000).toFixed(2);
-    if (key === "current" && info["current"]) return (Number(info["current"]) / 1000).toFixed(2);
-    if (key === "hashRate" && info["hashRate"]) return (Number(info["hashRate"]) / 1000).toFixed(2);
+    if (["voltage", "current", "hashRate"].includes(key) && info[key]) return divideAndRound(info[key]);
     return info[key]?.toString() || "-";
   }
 
